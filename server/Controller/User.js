@@ -1,4 +1,5 @@
 import User from "../Models/UserSchema.js";
+import Profile from "../Models/ProfileSchema.js";
 import bcrypt from "bcrypt";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
@@ -27,7 +28,7 @@ export const login = async (req, res) => {
     const token = jwt.sign({ id: user._id }, secretKey);
     req.header("auth-token", token);
 
-   res.status(201).json({ token });
+    res.status(201).json({ token });
   } catch (error) {
     res.status(404).json({ message: error.message });
   }
@@ -41,7 +42,7 @@ export const signup = async (req, res) => {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { email, password } = req.body;
+    const { name, phone, about, skill, email, password } = req.body;
 
     // checking if user already exist
     const emailExist = await User.findOne({ email: email });
@@ -52,6 +53,23 @@ export const signup = async (req, res) => {
 
     const newUser = new User({ email, password: hashedPassword });
     await newUser.save();
+
+    if (!req.file) {
+      return res.status(400).send("No file uploaded.");
+    }
+
+    //  the uploaded file information through req.file
+    const image = req.file.path;
+
+    const newProfile = await Profile.create({
+      user: newUser._id,
+      name,
+      phone,
+      about,
+      skill,
+      image,
+    });
+    await newProfile.save();
     // Create a JWT token
     const token = jwt.sign({ userId: newUser._id }, secretKey, {
       expiresIn: "1d",
@@ -60,5 +78,20 @@ export const signup = async (req, res) => {
     res.status(201).json({ token });
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+};
+
+export const getUser = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const profile = await Profile.findOne({ user: userId });
+    if (!profile) return res.status(404).json({ message: "Profile not found" });
+
+    res.json({ user, profile });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 };
