@@ -1,5 +1,5 @@
 import express from "express";
-import { signup, login, getUser } from "../Controller/User.js";
+import { signup, login, getUser, updateUser } from "../Controller/User.js";
 import { body } from "express-validator";
 import path from "path";
 import multer from "multer";
@@ -36,10 +36,13 @@ router.post(
 );
 router.post(
   "/login",
-  body("email").isEmail().withMessage("Please enter a valid email."),
-  body("password").notEmpty().withMessage("Password is required."),
+  [
+    body("email").isEmail().withMessage("Please enter a valid email."),
+    body("password").notEmpty().withMessage("Password is required."),
+  ],
   login
 );
 router.get("/user/:userId", getUser);
+router.patch("/user/profile/:userId", upload.single("image"), updateUser);
 
 export default router;

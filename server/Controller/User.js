@@ -4,6 +4,7 @@ import bcrypt from "bcrypt";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 import { validationResult } from "express-validator";
+import mongoose from "mongoose";
 
 dotenv.config();
 
@@ -91,6 +92,37 @@ export const getUser = async (req, res) => {
     if (!profile) return res.status(404).json({ message: "Profile not found" });
 
     res.json({ user, profile });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const updateUser = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+
+    if (!mongoose.Types.ObjectId.isValid(userId))
+      return res.status(404).send("No Profile with that id");
+
+    const { name, phone, about, skill } = req.body;
+
+    //  the uploaded file information through req.file
+    const image = req.file.path;
+
+    const profile = await Profile.findOneAndUpdate({
+      user: userId,
+      name,
+      phone,
+      about,
+      skill,
+      image,
+    });
+
+    // Respond with a success message or updated resource
+    res.json({
+      message: "User updated successfully",
+      updatedUser: profile,
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
