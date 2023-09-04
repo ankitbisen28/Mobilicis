@@ -10,6 +10,8 @@ const UserSchema = new Schema({
     type: String,
     require: true,
   },
+  followers: [{ type: mongoose.Schema.Types.ObjectId, ref: "Relationship" }],
+  following: [{ type: mongoose.Schema.Types.ObjectId, ref: "Relationship" }],
   date: {
     type: Date,
     default: Date.now,

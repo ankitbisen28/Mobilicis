@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 
 import AuthRoutes from "./Routes/AuthRoutes.js";
+import FollowRoutes from "./Routes/FollowRoutes.js";
 
 const app = express();
 dotenv.config();
@@ -17,6 +18,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api", AuthRoutes);
+app.use("/api", FollowRoutes);
 
 mongoose.set("strictQuery", false);
 mongoose
